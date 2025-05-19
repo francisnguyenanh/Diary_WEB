@@ -129,6 +129,32 @@ def change_slogan():
     flash('Slogan updated successfully!', 'success')
     return redirect(request.referrer or url_for('index'))
 
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    if 'user_id' not in session:
+        flash('Please login to perform this action.', 'danger')
+        return redirect(url_for('login'))
+    user_id = request.form.get('user_id')
+    if not user_id:
+        flash('No user selected.', 'danger')
+        return redirect(request.referrer or url_for('index'))
+    try:
+        user = User.query.get_or_404(int(user_id))
+        # Delete all diaries of the user
+        Diary.query.filter_by(user_id=user.id).delete()
+        # Delete the user
+        db.session.delete(user)
+        db.session.commit()
+        # If the current user deletes themselves, log them out
+        if user.id == session['user_id']:
+            session.pop('user_id', None)
+            flash(f'User {user.username} and all their data deleted successfully. You have been logged out.', 'success')
+            return redirect(url_for('login'))
+        flash(f'User {user.username} and all their data deleted successfully.', 'success')
+    except ValueError:
+        flash('Invalid user ID.', 'danger')
+    return redirect(request.referrer or url_for('index'))
+
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
@@ -199,8 +225,10 @@ def inject_theme():
         if user:
             days_alive = (date.today() - user.date_of_birth).days
             slogan = Slogan.query.first()
-            return dict(theme_color=user.theme_color, days_alive=days_alive, slogan=slogan.text if slogan else "Write your story, live your journey.")
-    return dict(theme_color='#ffffff', days_alive=0, slogan=Slogan.query.first().text if Slogan.query.first() else "Write your story, live your journey.")
+            users = User.query.all()  # For delete user dropdown
+            return dict(theme_color=user.theme_color, days_alive=days_alive, slogan=slogan.text if slogan else "Write your story, live your journey.", users=users)
+    users = User.query.all()  # For delete user dropdown when not logged in
+    return dict(theme_color='#ffffff', days_alive=0, slogan=Slogan.query.first().text if Slogan.query.first() else "Write your story, live your journey.", users=users)
 
 if __name__ == '__main__':
     app.run(debug=True)

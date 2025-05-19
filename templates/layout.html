@@ -157,7 +157,7 @@
     </div>
     {% endif %}
 
-    <!-- Settings Modal (Change Slogan only) -->
+    <!-- Settings Modal -->
     <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -166,13 +166,39 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{{ url_for('change_slogan') }}">
-                        <div class="mb-3">
-                            <label for="new_slogan" class="form-label">New Slogan</label>
-                            <input type="text" class="form-control" id="new_slogan" name="new_slogan" maxlength="200" required>
+                    <ul class="nav nav-tabs mb-3" id="settingsTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="slogan-tab" data-bs-toggle="tab" data-bs-target="#slogan" type="button" role="tab" aria-controls="slogan" aria-selected="true">Change Slogan</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="delete-user-tab" data-bs-toggle="tab" data-bs-target="#delete-user" type="button" role="tab" aria-controls="delete-user" aria-selected="false">Delete User</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="settingsTabContent">
+                        <div class="tab-pane fade show active" id="slogan" role="tabpanel" aria-labelledby="slogan-tab">
+                            <form method="POST" action="{{ url_for('change_slogan') }}">
+                                <div class="mb-3">
+                                    <label for="new_slogan" class="form-label">New Slogan</label>
+                                    <input type="text" class="form-control" id="new_slogan" name="new_slogan" maxlength="200" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update Slogan</button>
+                            </form>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Update Slogan</button>
-                    </form>
+                        <div class="tab-pane fade" id="delete-user" role="tabpanel" aria-labelledby="delete-user-tab">
+                            <form method="POST" action="{{ url_for('delete_user') }}" onsubmit="return confirm('Are you sure you want to delete this user and all their data? This action cannot be undone.');">
+                                <div class="mb-3">
+                                    <label for="user_id" class="form-label">Select User</label>
+                                    <select class="form-select" id="user_id" name="user_id" required>
+                                        <option value="" disabled selected>Select a user</option>
+                                        {% for user in users %}
+                                            <option value="{{ user.id }}">{{ user.username }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-danger w-100">Delete User</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
