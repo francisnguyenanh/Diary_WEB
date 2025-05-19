@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2>Diary Grid</h2>
+<h2 class="fs-4 fw-bold text-primary text-uppercase mb-3"><i class="bi bi-grid me-2"></i>Grid View</h2>
 <div class="diary-grid">
     {% for diary in diaries %}
         <a href="{{ url_for('edit_diary', id=diary.id) }}" class="diary-tile" style="background-color: {{ diary.color }}"></a>
@@ -11,7 +11,7 @@
         display: grid;
         gap: 5px;
         padding: 10px;
-        height: calc(100vh - 150px); /* Adjust for navbar and heading */
+        height: calc(100vh - 150px);
         box-sizing: border-box;
     }
     .diary-tile {
@@ -22,7 +22,7 @@
         .diary-grid {
             gap: 3px;
             padding: 5px;
-            height: calc(100vh - 120px); /* Adjust for smaller screens */
+            height: calc(100vh - 120px);
         }
     }
 </style>
@@ -33,27 +33,21 @@
         const count = tiles.length;
         if (count === 0) return;
 
-        // Get viewport dimensions
         const vw = window.innerWidth;
-        const vh = grid.clientHeight; // Use grid height (accounts for navbar/heading)
-
-        // Calculate number of rows/columns to fit all tiles
+        const vh = grid.clientHeight;
         const sqrt = Math.ceil(Math.sqrt(count));
         const cols = sqrt;
         let rows = Math.ceil(count / cols);
 
-        // Calculate tile size to fit viewport
-        const tileWidth = (vw - (cols - 1) * 5 - 20) / cols; // Account for gap and padding
-        const tileHeight = (vh - (rows - 1) * 5 - 20) / rows; // Account for gap and padding
-        const tileSize = Math.min(tileWidth, tileHeight); // Ensure square tiles
+        const tileWidth = (vw - (cols - 1) * 5 - 20) / cols;
+        const tileHeight = (vh - (rows - 1) * 5 - 20) / rows;
+        const tileSize = Math.min(tileWidth, tileHeight);
 
-        // Adjust rows if needed to fit all tiles
         if (tileSize * rows < vh && count > cols) {
             rows = Math.floor(vh / tileSize);
             if (rows * cols < count) rows++;
         }
 
-        // Update grid
         grid.style.gridTemplateColumns = `repeat(${cols}, ${tileSize}px)`;
         grid.style.gridTemplateRows = `repeat(${rows}, ${tileSize}px)`;
         tiles.forEach(tile => {
@@ -61,7 +55,6 @@
             tile.style.height = `${tileSize}px`;
         });
 
-        // Center grid if fewer tiles than grid cells
         grid.style.display = 'grid';
         grid.style.justifyContent = 'center';
         grid.style.alignContent = 'center';

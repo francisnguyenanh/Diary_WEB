@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2>Edit Diary Entry</h2>
+<h2 class="fs-4 fw-bold text-primary text-uppercase mb-3"><i class="bi bi-pencil-square me-2"></i>Edit Entry</h2>
 <form method="POST">
     <div class="mb-3 d-flex align-items-center">
         <div class="me-3">
@@ -17,12 +17,12 @@
             </datalist>
         </div>
         <div class="flex-grow-1">
-            <label for="title" class="form-label">Title</label>
+            <label for="title" class="form-label fw-bold text-primary fs-5">Title</label>
             <input type="text" class="form-control" id="title" name="title" value="{{ diary.title }}" required>
         </div>
     </div>
     <div class="mb-3">
-        <label for="content" class="form-label">Content</label>
+        <label for="content" class="form-label fw-bold text-primary fs-5">Content</label>
         <textarea class="form-control" id="content" name="content" rows="15" required>{{ diary.content }}</textarea>
     </div>
     <button type="submit" class="btn btn-primary">Update Diary</button>
@@ -33,7 +33,6 @@
         height: 50px;
         padding: 5px;
     }
-    /* Ensure color picker popup is larger */
     input[type="color"]::-webkit-color-swatch-wrapper {
         padding: 0;
     }
@@ -41,21 +40,23 @@
         border: none;
         border-radius: 5px;
     }
+    .form-label.fw-bold.text-primary.fs-5 {
+        transition: color 0.3s;
+    }
+    .form-label.fw-bold.text-primary.fs-5:hover {
+        color: #005cbf; /* Darker shade of primary */
+    }
 </style>
 <script>
     const colorInput = document.getElementById('color');
     const contentArea = document.getElementById('content');
 
     function calculateContrastColor(hexColor) {
-        // Remove # from hex color
         hexColor = hexColor.replace('#', '');
-        // Convert hex to RGB
         const r = parseInt(hexColor.substr(0, 2), 16);
         const g = parseInt(hexColor.substr(2, 2), 16);
         const b = parseInt(hexColor.substr(4, 2), 16);
-        // Calculate relative luminance (simplified formula)
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        // Return black for bright backgrounds, white for dark backgrounds
         return luminance > 0.5 ? '#000000' : '#FFFFFF';
     }
 
@@ -66,7 +67,6 @@
     }
 
     colorInput.addEventListener('input', updateContentStyle);
-    // Initialize on page load
     updateContentStyle();
 </script>
 {% endblock %}
