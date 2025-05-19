@@ -14,8 +14,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    theme_color = db.Column(db.String(7), default='#ffffff')  # Store theme color
-    date_of_birth = db.Column(db.Date, nullable=False)  # Store date of birth
+    theme_color = db.Column(db.String(7), default='#ffffff')
+    date_of_birth = db.Column(db.Date, nullable=False)
 
 # Diary model
 class Diary(db.Model):
@@ -23,12 +23,21 @@ class Diary(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    color = db.Column(db.String(7), nullable=False)  # Hex color code
+    color = db.Column(db.String(7), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-# Create database
+# Slogan model
+class Slogan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(200), nullable=False)
+
+# Create database and initialize default slogan
 with app.app_context():
     db.create_all()
+    if not Slogan.query.first():
+        default_slogan = Slogan(text="Write your story, live your journey.")
+        db.session.add(default_slogan)
+        db.session.commit()
 
 # Custom Jinja2 filter to format numbers with thousands separators
 @app.template_filter('format_thousands')
@@ -81,6 +90,44 @@ def register():
             flash('Registration successful! Please login.', 'success')
             return redirect(url_for('login'))
     return render_template('register.html')
+
+@app.route('/popup_register', methods=['POST'])
+def popup_register():
+    username = request.form['popup_username']
+    password = request.form['popup_password']
+    dob = request.form['popup_date_of_birth']
+    try:
+        dob_date = datetime.strptime(dob, '%Y-%m-%d').date()
+        if dob_date > date.today():
+            flash('Date of birth cannot be in the future', 'danger')
+            return redirect(request.referrer or url_for('index'))
+    except ValueError:
+        flash('Invalid date format', 'danger')
+        return redirect(request.referrer or url_for('index'))
+    if User.query.filter_by(username=username).first():
+        flash('Username already exists', 'danger')
+    else:
+        user = User(username=username, password=password, date_of_birth=dob_date)
+        db.session.add(user)
+        db.session.commit()
+        flash('Registration successful! Please login.', 'success')
+    return redirect(request.referrer or url_for('index'))
+
+@app.route('/change_slogan', methods=['POST'])
+def change_slogan():
+    new_slogan_text = request.form['new_slogan']
+    if not new_slogan_text or len(new_slogan_text) > 200:
+        flash('Slogan must be between 1 and 200 characters.', 'danger')
+        return redirect(request.referrer or url_for('index'))
+    slogan = Slogan.query.first()
+    if slogan:
+        slogan.text = new_slogan_text
+    else:
+        slogan = Slogan(text=new_slogan_text)
+        db.session.add(slogan)
+    db.session.commit()
+    flash('Slogan updated successfully!', 'success')
+    return redirect(request.referrer or url_for('index'))
 
 @app.route('/logout')
 def logout():
@@ -151,8 +198,9 @@ def inject_theme():
         user = User.query.get(session['user_id'])
         if user:
             days_alive = (date.today() - user.date_of_birth).days
-            return dict(theme_color=user.theme_color, days_alive=days_alive)
-    return dict(theme_color='#ffffff', days_alive=0)
+            slogan = Slogan.query.first()
+            return dict(theme_color=user.theme_color, days_alive=days_alive, slogan=slogan.text if slogan else "Write your story, live your journey.")
+    return dict(theme_color='#ffffff', days_alive=0, slogan=Slogan.query.first().text if Slogan.query.first() else "Write your story, live your journey.")
 
 if __name__ == '__main__':
     app.run(debug=True)
